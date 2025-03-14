@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Number Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px;
+        }
+        #result {
+            margin-top: 20px;
+            word-wrap: break-word;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Numbers in Pi</h1>
+    <p>Enter a number sequence to find its position in the first 100,000 digits of Pi:</p>
+    
+    <input type="text" id="searchInput" placeholder="Enter numbers">
+    <button onclick="searchPi()">Search</button>
+    
+    <div id="result"></div>
+
+    <!-- Include big.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/big.js/6.2.1/big.min.js"></script>
+    <script>
+        // Calculate Pi to 100,000 digits
+        Big.DP = 100000; // Set decimal precision
+        const pi = new Big(4).times(new Big(1).atan()).toString(); // Calculate Pi
+
+        function searchPi() {
+            const searchTerm = document.getElementById('searchInput').value.replace(/\s/g, '');
+            const resultDiv = document.getElementById('result');
+            
+            if (!searchTerm || !/^\d+$/.test(searchTerm)) {
+                resultDiv.innerHTML = "Please enter a valid number sequence.";
+                return;
+            }
+
+            const piNoSpaces = pi.replace(/\s/g, '');
+            const position = piNoSpaces.indexOf(searchTerm);
+            
+            if (position === -1) {
+                resultDiv.innerHTML = `Sequence "${searchTerm}" not found in the first 100,000 digits of Pi.`;
+            } else {
+                // Create highlighted display (showing snippet around match)
+                const snippetStart = Math.max(0, position - 50);
+                const snippetEnd = Math.min(piNoSpaces.length, position + searchTerm.length + 50);
+                const before = piNoSpaces.substring(snippetStart, position);
+                const match = piNoSpaces.substring(position, position + searchTerm.length);
+                const after = piNoSpaces.substring(position + searchTerm.length, snippetEnd);
+                
+                resultDiv.innerHTML = `
+                    Found "${searchTerm}" at position ${position + 1} (counting from 1 after decimal point):<br>
+                    ...${before}<span class="highlight">${match}</span>${after}...
+                `;
+            }
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPi();
+            }
+        });
+    </script>
+</body>
+</html>
