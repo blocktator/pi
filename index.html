@@ -28,17 +28,27 @@
     <h1>Search Numbers in Pi</h1>
     <p>Enter a number sequence to find its position in the first 100,000 digits of Pi:</p>
     
-    <input type="text" id="searchInput" placeholder="Enter numbers">
-    <button onclick="searchPi()">Search</button>
+    <input type="text" id="searchInput" placeholder="Enter numbers" disabled>
+    <button onclick="searchPi()" disabled id="searchButton">Search</button>
     
-    <div id="result"></div>
+    <div id="result">Loading Pi digits...</div>
 
-    <!-- Include big.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/big.js/6.2.1/big.min.js"></script>
     <script>
-        // Calculate Pi to 100,000 digits
-        Big.DP = 100000; // Set decimal precision
-        const pi = new Big(4).times(new Big(1).atan()).toString(); // Calculate Pi
+        let pi = '';
+
+        // Load Pi from file
+        async function loadPi() {
+            try {
+                const response = await fetch('pi.txt');
+                if (!response.ok) throw new Error('File not found');
+                pi = await response.text();
+                document.getElementById('searchInput').disabled = false;
+                document.getElementById('searchButton').disabled = false;
+                document.getElementById('result').innerHTML = 'Ready! Enter a number sequence to search.';
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Error loading Pi: ${error.message}. Please ensure pi_100k.txt is in the same directory.`;
+            }
+        }
 
         function searchPi() {
             const searchTerm = document.getElementById('searchInput').value.replace(/\s/g, '');
@@ -55,7 +65,7 @@
             if (position === -1) {
                 resultDiv.innerHTML = `Sequence "${searchTerm}" not found in the first 100,000 digits of Pi.`;
             } else {
-                // Create highlighted display (showing snippet around match)
+                // Show snippet around match
                 const snippetStart = Math.max(0, position - 50);
                 const snippetEnd = Math.min(piNoSpaces.length, position + searchTerm.length + 50);
                 const before = piNoSpaces.substring(snippetStart, position);
@@ -75,6 +85,9 @@
                 searchPi();
             }
         });
+
+        // Start loading Pi when page loads
+        loadPi();
     </script>
 </body>
 </html>
